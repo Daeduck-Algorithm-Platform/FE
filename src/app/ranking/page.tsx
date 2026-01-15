@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Trophy } from "lucide-react";
-import FilterSidebar from "@/components/FilterSidebar";
 
 interface UserRanking {
   id: string;
@@ -13,7 +12,7 @@ interface UserRanking {
   score: number;
 }
 
-const rankings: UserRanking[] = [
+const baseRankings: UserRanking[] = [
   {
     id: "1",
     rank: 1,
@@ -26,7 +25,7 @@ const rankings: UserRanking[] = [
     id: "2",
     rank: 2,
     username: "조성현",
-    solved: 4,
+    solved: 6,
     accuracy: 92,
     score: 2840,
   },
@@ -34,7 +33,7 @@ const rankings: UserRanking[] = [
     id: "3",
     rank: 3,
     username: "유재민",
-    solved: 1,
+    solved: 4,
     accuracy: 100,
     score: 2210,
   },
@@ -42,11 +41,37 @@ const rankings: UserRanking[] = [
     id: "4",
     rank: 4,
     username: "정승우",
-    solved: 3,
+    solved: 5,
     accuracy: 95,
     score: 3580,
   },
 ];
+
+// 랭킹 계산 로직: 풀이 수, 정답률, 점수를 정규화해서 총점 계산
+const calculateRankingScore = (ranking: UserRanking): number => {
+  // 최대값 기준으로 정규화 (0-100 범위)
+  const maxSolved = Math.max(...baseRankings.map((r) => r.solved));
+  const maxScore = Math.max(...baseRankings.map((r) => r.score));
+
+  const solvedScore = (ranking.solved / maxSolved) * 100;
+  const accuracyScore = ranking.accuracy; // 이미 0-100 범위
+  const scoreScore = (ranking.score / maxScore) * 100;
+
+  // 세 항목을 동일 가중치로 합산
+  return (solvedScore + accuracyScore + scoreScore) / 3;
+};
+
+// 점수 기준으로 정렬하고 순위 재지정
+const rankings: UserRanking[] = baseRankings
+  .map((ranking) => ({
+    ...ranking,
+    totalScore: calculateRankingScore(ranking),
+  }))
+  .sort((a: any, b: any) => b.totalScore - a.totalScore)
+  .map((ranking: any, index) => ({
+    ...ranking,
+    rank: index + 1,
+  }));
 
 const getRankColor = (rank: number) => {
   switch (rank) {
@@ -76,10 +101,8 @@ const getRankBgColor = (rank: number) => {
 
 export default function RankingPage() {
   return (
-    <div className="flex bg-[#0b0b0b] min-h-screen">
-      <FilterSidebar />
-
-      <main className="flex-1 px-10 py-12">
+    <div className="bg-[#0b0b0b] min-h-screen">
+      <main className="px-10 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-start justify-between mb-10">
             <div>

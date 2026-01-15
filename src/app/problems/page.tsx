@@ -244,9 +244,6 @@ export default function ProblemsPage() {
                 실전에 나오는 문제들을 풀고 실력을 키우세요.
               </p>
             </div>
-            <button className="flex items-center gap-2 bg-green-400 text-black font-bold px-6 py-3 rounded-lg hover:bg-green-500 transition-colors">
-              추가하기
-            </button>
           </div>
 
           {/* 탭 */}
@@ -304,11 +301,7 @@ export default function ProblemsPage() {
             {/* 테이블 바디 */}
             {filteredProblems.map((problem, index) => (
               <Link key={problem.id} href={`/problems/${problem.id}`}>
-                <div
-                  className={`grid grid-cols-[60px,1fr,100px,80px,100px,100px,100px,120px] gap-4 px-6 py-4 text-sm items-center border-b border-gray-900 hover:bg-[#111111] transition-colors ${
-                    index === 0 ? "bg-red-500/10" : ""
-                  }`}
-                >
+                <div className="grid grid-cols-[60px,1fr,100px,80px,100px,100px,100px,120px] gap-4 px-6 py-4 text-sm items-center border-b border-gray-900 hover:bg-[#111111] transition-colors">
                   {/* 번호 */}
                   <span className="text-gray-500">{problem.number}</span>
 

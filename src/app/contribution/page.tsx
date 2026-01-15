@@ -85,7 +85,7 @@ const getStatusColor = (status: string) => {
 export default function ContributionPage() {
   return (
     <div className="flex bg-[#0b0b0b] min-h-screen">
-      <FilterSidebar />
+      <FilterSidebar showStatusFilter={false} />
 
       <main className="flex-1 px-10 py-12">
         <div className="max-w-6xl mx-auto">

@@ -22,9 +22,14 @@ const defaultFilters: FilterState = {
 interface FilterProps {
   value?: FilterState;
   onFilterChange?: (filters: FilterState) => void;
+  showStatusFilter?: boolean;
 }
 
-export default function FilterSidebar({ value, onFilterChange }: FilterProps) {
+export default function FilterSidebar({
+  value,
+  onFilterChange,
+  showStatusFilter = true,
+}: FilterProps) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
 
   // sync when parent provides controlled value
@@ -129,25 +134,27 @@ export default function FilterSidebar({ value, onFilterChange }: FilterProps) {
       </div>
 
       {/* 해결 상태 필터 */}
-      <div className="mb-8">
-        <label className="text-gray-300 text-xs block mb-3">해결상태</label>
-        <div className="flex flex-wrap gap-3">
-          {["전체", "해결", "미해결", "실패"].map((status) => (
-            <button
-              type="button"
-              key={status}
-              onClick={() => handleStatusChange(status)}
-              className={`px-4 py-2 rounded-md border text-sm transition-colors ${
-                filters.status === status
-                  ? "border-green-500 text-green-400 bg-green-500/10 shadow-[0_0_0_1px_rgba(74,222,128,0.2)]"
-                  : "border-gray-700 text-gray-300 hover:border-gray-500"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+      {showStatusFilter && (
+        <div className="mb-8">
+          <label className="text-gray-300 text-xs block mb-3">해결상태</label>
+          <div className="flex flex-wrap gap-3">
+            {["전체", "해결", "미해결", "실패"].map((status) => (
+              <button
+                type="button"
+                key={status}
+                onClick={() => handleStatusChange(status)}
+                className={`px-4 py-2 rounded-md border text-sm transition-colors ${
+                  filters.status === status
+                    ? "border-green-500 text-green-400 bg-green-500/10 shadow-[0_0_0_1px_rgba(74,222,128,0.2)]"
+                    : "border-gray-700 text-gray-300 hover:border-gray-500"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 레코드 필터 */}
       <div className="mb-8">

@@ -1,11 +1,6 @@
-import Header from "@/components/Header";
-import ProblemsMainContent from "@/components/ProblemsMainContent";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="bg-black min-h-screen">
-      <Header />
-      <ProblemsMainContent />
-    </div>
-  );
+  // /problems로 리다이렉트
+  redirect("/problems");
 }
