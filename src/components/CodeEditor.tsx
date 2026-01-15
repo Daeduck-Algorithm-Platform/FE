@@ -1,79 +1,83 @@
 "use client";
 
-import React, { useState } from "react";
+import Editor from "@monaco-editor/react";
+import { editor } from "monaco-editor";
 
 interface CodeEditorProps {
-  initialCode?: string;
-  onRun?: (code: string, language: string) => void;
-  onSubmit?: (code: string, language: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  language: string;
+  theme?: string;
+  height?: string;
+  onCursorChange?: (line: number, column: number) => void;
 }
 
 export default function CodeEditor({
-  initialCode = "// 여기에 코드를 작성하세요",
-  onRun,
-  onSubmit,
+  value,
+  onChange,
+  language,
+  theme = "vs-dark",
+  height = "100%",
+  onCursorChange,
 }: CodeEditorProps) {
-  const [code, setCode] = useState(initialCode);
-  const [language, setLanguage] = useState("javascript");
-  const [isRunning, setIsRunning] = useState(false);
-
-  const handleRun = async () => {
-    if (onRun) {
-      setIsRunning(true);
-      await onRun(code, language);
-      setIsRunning(false);
+  const handleEditorChange = (newValue: string | undefined) => {
+    if (newValue !== undefined) {
+      onChange(newValue);
     }
   };
 
-  const handleSubmit = async () => {
-    if (onSubmit) {
-      setIsRunning(true);
-      await onSubmit(code, language);
-      setIsRunning(false);
-    }
+  const handleEditorMount = (editorInstance: editor.IStandaloneCodeEditor) => {
+    // 에디터 설정
+    editorInstance.updateOptions({
+      minimap: { enabled: false }, // 미니맵 비활성화
+      automaticLayout: true,
+      wordWrap: "on",
+      fontSize: 14,
+      lineNumbersMinChars: 2,
+      formatOnPaste: true,
+      formatOnType: true,
+      tabSize: 4,
+      insertSpaces: true,
+      trimAutoWhitespace: true,
+    });
+
+    // 커서 위치 추적
+    editorInstance.onDidChangeCursorPosition((e) => {
+      if (onCursorChange) {
+        onCursorChange(e.position.lineNumber, e.position.column);
+      }
+    });
   };
 
   return (
-    <div className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden">
-      <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
-        <select
-          value={language}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setLanguage(e.target.value)
-          }
-          className="px-2 py-2 border border-gray-300 rounded text-sm cursor-pointer focus:outline-none focus:border-blue-500"
-        >
-          <option value="javascript">JavaScript</option>
-          <option value="typescript">TypeScript</option>
-          <option value="python">Python</option>
-          <option value="java">Java</option>
-          <option value="cpp">C++</option>
-        </select>
-        <div className="flex gap-2">
-          <button
-            onClick={handleRun}
-            disabled={isRunning}
-            className="px-4 py-2 text-sm font-medium rounded border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            실행
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isRunning}
-            className="px-4 py-2 text-sm font-medium rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            제출
-          </button>
-        </div>
-      </div>
-      <textarea
-        value={code}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCode(e.target.value)
-        }
-        placeholder="여기에 코드를 작성하세요..."
-        className="flex-1 p-4 font-mono text-sm leading-relaxed border-none resize-none focus:outline-none"
-      />
-    </div>
+    <Editor
+      height={height}
+      theme={theme}
+      language={language}
+      value={value}
+      onChange={handleEditorChange}
+      onMount={handleEditorMount}
+      options={{
+        selectOnLineNumbers: true,
+        autoClosingBrackets: "always",
+        autoClosingQuotes: "always",
+        autoIndent: "full",
+        formatOnPaste: true,
+        formatOnType: true,
+        scrollBeyondLastLine: false,
+        smoothScrolling: true,
+        cursorBlinking: "blink",
+        cursorStyle: "line",
+        renderLineHighlight: "line",
+        renderWhitespace: "none",
+        inlineSuggest: {
+          enabled: true,
+        },
+        suggest: {
+          showFields: true,
+          showSnippets: true,
+        },
+      }}
+    />
   );
 }
