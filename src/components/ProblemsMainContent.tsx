@@ -1,8 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpDown, Shield } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
+import { useMemo, useState } from "react";
 import FilterSidebar from "./FilterSidebar";
+
+type FilterState = {
+  keyword: string;
+  difficultyMin: string;
+  difficultyMax: string;
+  status: string;
+  record: string;
+};
 
 interface Problem {
   id: string;
@@ -13,7 +22,11 @@ interface Problem {
   submissionCount: number;
   likes: number;
   solveCount: number;
+  status: "해결" | "미해결" | "실패";
+  record: string;
 }
+
+const solverNames = ["정승우", "강은찬", "조성현", "유재민"] as const;
 
 const problems: Problem[] = [
   {
@@ -25,6 +38,8 @@ const problems: Problem[] = [
     submissionCount: 3500,
     likes: 10,
     solveCount: 3000,
+    status: "해결",
+    record: solverNames[0],
   },
   {
     id: "2",
@@ -35,6 +50,8 @@ const problems: Problem[] = [
     submissionCount: 3012,
     likes: 130,
     solveCount: 700,
+    status: "미해결",
+    record: solverNames[1],
   },
   {
     id: "3",
@@ -45,16 +62,128 @@ const problems: Problem[] = [
     submissionCount: 12,
     likes: 1,
     solveCount: 23,
+    status: "실패",
+    record: solverNames[2],
   },
   {
     id: "4",
     number: 4,
     title: "Contact",
     difficulty: "쉬움",
-    acceptanceRate: 120,
-    submissionCount: 1313,
-    likes: 1012,
+    acceptanceRate: 74,
+    submissionCount: 900,
+    likes: 42,
     solveCount: 120,
+    status: "해결",
+    record: solverNames[3],
+  },
+  {
+    id: "5",
+    number: 5,
+    title: "그래프 탐색",
+    difficulty: "어려움",
+    acceptanceRate: 21,
+    submissionCount: 740,
+    likes: 18,
+    solveCount: 85,
+    status: "미해결",
+    record: solverNames[0],
+  },
+  {
+    id: "6",
+    number: 6,
+    title: "정렬 알고리즘",
+    difficulty: "중간",
+    acceptanceRate: 65,
+    submissionCount: 2100,
+    likes: 75,
+    solveCount: 1500,
+    status: "해결",
+    record: solverNames[1],
+  },
+  {
+    id: "7",
+    number: 7,
+    title: "동적 계획법",
+    difficulty: "어려움",
+    acceptanceRate: 35,
+    submissionCount: 520,
+    likes: 22,
+    solveCount: 210,
+    status: "해결",
+    record: solverNames[0],
+  },
+  {
+    id: "8",
+    number: 8,
+    title: "해시 테이블",
+    difficulty: "중간",
+    acceptanceRate: 71,
+    submissionCount: 1800,
+    likes: 88,
+    solveCount: 1400,
+    status: "해결",
+    record: solverNames[1],
+  },
+  {
+    id: "9",
+    number: 9,
+    title: "이진 탐색",
+    difficulty: "중간",
+    acceptanceRate: 58,
+    submissionCount: 1200,
+    likes: 45,
+    solveCount: 800,
+    status: "해결",
+    record: solverNames[2],
+  },
+  {
+    id: "10",
+    number: 10,
+    title: "스택과 큐",
+    difficulty: "쉬움",
+    acceptanceRate: 82,
+    submissionCount: 2200,
+    likes: 120,
+    solveCount: 2100,
+    status: "해결",
+    record: solverNames[1],
+  },
+  {
+    id: "11",
+    number: 11,
+    title: "트리 순회",
+    difficulty: "어려움",
+    acceptanceRate: 28,
+    submissionCount: 620,
+    likes: 15,
+    solveCount: 180,
+    status: "해결",
+    record: solverNames[1],
+  },
+  {
+    id: "12",
+    number: 12,
+    title: "최단 경로",
+    difficulty: "어려움",
+    acceptanceRate: 19,
+    submissionCount: 480,
+    likes: 8,
+    solveCount: 92,
+    status: "해결",
+    record: solverNames[2],
+  },
+  {
+    id: "13",
+    number: 13,
+    title: "순열과 조합",
+    difficulty: "중간",
+    acceptanceRate: 45,
+    submissionCount: 940,
+    likes: 52,
+    solveCount: 450,
+    status: "미해결",
+    record: solverNames[3],
   },
 ];
 
@@ -72,101 +201,156 @@ const getDifficultyColor = (difficulty: string) => {
 };
 
 export default function ProblemsMainContent() {
+  const [filters, setFilters] = useState<FilterState>({
+    keyword: "",
+    difficultyMin: "",
+    difficultyMax: "",
+    status: "전체",
+    record: "",
+  });
+
+  const handleFilterChange = (next: FilterState) => {
+    setFilters(next);
+  };
+
+  const visibleProblems = useMemo(() => {
+    const order = ["쉬움", "중간", "어려움"];
+
+    return problems.filter((p) => {
+      // 입력 정리
+      const keyword = filters.keyword.trim().toLowerCase();
+      const recordTerm = filters.record.trim().toLowerCase();
+
+      // 키워드: 제목 포함
+      const matchKeyword = keyword
+        ? p.title.toLowerCase().includes(keyword)
+        : true;
+
+      // 난이도: 구간 내 여부
+      const currentIdx = order.indexOf(p.difficulty);
+      const minOk = filters.difficultyMin
+        ? currentIdx >= order.indexOf(filters.difficultyMin)
+        : true;
+      const maxOk = filters.difficultyMax
+        ? currentIdx <= order.indexOf(filters.difficultyMax)
+        : true;
+
+      // 해결 상태
+      const matchStatus =
+        filters.status === "전체" ? true : p.status === filters.status;
+
+      // 레코드: 이름 포함
+      const matchRecord = recordTerm
+        ? p.record.toLowerCase().includes(recordTerm)
+        : true;
+
+      return matchKeyword && minOk && maxOk && matchStatus && matchRecord;
+    });
+  }, [filters]);
+
   return (
-    <div className="flex bg-black">
+    <div className="flex bg-[#0b0b0b] min-h-screen">
       {/* 왼쪽 사이드바 */}
-      <FilterSidebar />
+      <FilterSidebar value={filters} onFilterChange={handleFilterChange} />
 
       {/* 메인 콘텐츠 */}
-      <main className="flex-1 p-6">
-        {/* 탭 */}
-        <div className="flex gap-4 mb-6 border-b border-gray-700 pb-4">
-          <button className="text-green-400 font-semibold text-sm border-b-2 border-green-400 pb-2">
-            문제
-          </button>
-          <button className="text-gray-400 font-semibold text-sm hover:text-gray-300">
-            기여
-          </button>
-          <button className="text-gray-400 font-semibold text-sm hover:text-gray-300">
-            랭킹
-          </button>
-        </div>
-
-        {/* 필터 정보 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-white font-semibold text-lg">문제</h2>
-            <p className="text-gray-400 text-sm mt-1">
-              실전에 나오는 문제들을 풀고 실력을 키우세요.
-            </p>
-          </div>
-          <button className="px-4 py-2 rounded bg-green-500 hover:bg-green-600 text-black font-semibold text-sm transition-colors">
-            추가하기
-          </button>
-        </div>
-
-        {/* 문제 테이블 */}
-        <div className="rounded border border-gray-700 overflow-hidden">
-          {/* 테이블 헤더 */}
-          <div className="bg-gray-900 border-b border-gray-700 grid grid-cols-12 gap-4 px-6 py-4 text-sm text-gray-400 font-semibold">
-            <div className="col-span-6 flex items-center gap-2 cursor-pointer hover:text-gray-300">
-              번호 <ArrowUpDown size={16} />
-            </div>
-            <div className="col-span-2 flex items-center gap-2 cursor-pointer hover:text-gray-300">
-              난이도 <ArrowUpDown size={16} />
-            </div>
-            <div className="col-span-2 flex items-center gap-2 cursor-pointer hover:text-gray-300">
-              정답률 <ArrowUpDown size={16} />
-            </div>
-            <div className="col-span-2 flex items-center gap-2 cursor-pointer hover:text-gray-300">
-              제출 <ArrowUpDown size={16} />
+      <main className="flex-1 px-10 py-12">
+        <div className="max-w-6xl mx-auto">
+          {/* 헤더 */}
+          <div className="flex items-start justify-between mb-10">
+            <div>
+              <h1 className="text-3xl font-bold text-white">문제</h1>
+              <p className="text-sm text-gray-400 mt-3">
+                실전에 나오는 문제들을 풀고 실력을 키우세요.
+              </p>
             </div>
           </div>
 
-          {/* 테이블 바디 */}
-          {problems.map((problem, index) => (
-            <Link key={problem.id} href={`/problems/${problem.id}`}>
-              <div
-                className={`grid grid-cols-12 gap-4 px-6 py-4 text-sm border-b border-gray-700 hover:bg-gray-900 transition-colors cursor-pointer ${
-                  index === 0 ? "bg-red-500 bg-opacity-10" : ""
-                }`}
-              >
-                {/* 번호와 제목 */}
-                <div className="col-span-6 flex items-center gap-3">
-                  <span className="text-gray-500 w-8">{problem.number}</span>
-                  <div className="flex-1">
-                    {index === 0 && (
-                      <span className="inline-block px-2 py-1 bg-red-500 text-white text-xs rounded mr-2">
-                        어려움
+          {/* 탭 */}
+          <div className="flex gap-8 text-sm mb-8 border-b border-gray-900">
+            <Link
+              href="/problems"
+              className="text-green-400 font-bold border-b-2 border-green-500 pb-4"
+            >
+              문제
+            </Link>
+            <Link
+              href="/contribution"
+              className="text-gray-500 font-bold hover:text-gray-300 pb-4 transition-colors"
+            >
+              기여
+            </Link>
+            <Link
+              href="/ranking"
+              className="text-gray-500 font-bold hover:text-gray-300 pb-4 transition-colors"
+            >
+              랭킹
+            </Link>
+          </div>
+
+          {/* 문제 테이블 */}
+          <div className="rounded-xl border border-gray-900 overflow-hidden bg-[#0d0d0d]">
+            {/* 테이블 헤더 */}
+            <div className="bg-black/30 border-b border-gray-900 grid grid-cols-12 gap-4 px-6 py-4 text-xs tracking-wide text-gray-500 uppercase">
+              <div className="col-span-6 flex items-center gap-2 cursor-pointer hover:text-gray-300">
+                번호 <ArrowUpDown size={16} />
+              </div>
+              <div className="col-span-2 flex items-center gap-2 cursor-pointer hover:text-gray-300">
+                난이도 <ArrowUpDown size={16} />
+              </div>
+              <div className="col-span-2 flex items-center gap-2 cursor-pointer hover:text-gray-300">
+                정답률 <ArrowUpDown size={16} />
+              </div>
+              <div className="col-span-2 flex items-center gap-2 cursor-pointer hover:text-gray-300">
+                제출 <ArrowUpDown size={16} />
+              </div>
+            </div>
+
+            {/* 테이블 바디 */}
+            {visibleProblems.map((problem, index) => (
+              <Link key={problem.id} href={`/problems/${problem.id}`}>
+                <div
+                  className={`grid grid-cols-12 gap-4 px-6 py-4 text-sm items-center border-b border-gray-900 hover:bg-[#111111] transition-colors ${
+                    index === 0 ? "bg-red-500/10" : ""
+                  }`}
+                >
+                  {/* 번호와 제목 */}
+                  <div className="col-span-6 flex items-center gap-3">
+                    <span className="text-gray-500 w-8">{problem.number}</span>
+                    <div className="flex-1 flex items-center gap-2">
+                      {index === 0 && (
+                        <span className="inline-block px-2 py-1 bg-red-500 text-white text-xs rounded">
+                          어려움
+                        </span>
+                      )}
+                      <span className="text-white font-medium hover:text-green-400 transition-colors">
+                        {problem.title}
                       </span>
-                    )}
-                    <span className="text-white font-medium hover:text-green-400">
-                      {problem.title}
-                    </span>
+                    </div>
+                  </div>
+
+                  {/* 난이도 */}
+                  <div
+                    className={`col-span-2 font-semibold ${getDifficultyColor(
+                      problem.difficulty
+                    )}`}
+                  >
+                    {problem.difficulty}
+                  </div>
+
+                  {/* 정답률 */}
+                  <div className="col-span-2 text-gray-400">
+                    {problem.acceptanceRate}%
+                  </div>
+
+                  {/* 제출 수 */}
+                  <div className="col-span-2 text-gray-400">
+                    {problem.submissionCount}
                   </div>
                 </div>
-
-                {/* 난이도 */}
-                <div
-                  className={`col-span-2 ${getDifficultyColor(
-                    problem.difficulty
-                  )}`}
-                >
-                  {problem.difficulty}
-                </div>
-
-                {/* 정답률 */}
-                <div className="col-span-2 text-gray-400">
-                  {problem.acceptanceRate}%
-                </div>
-
-                {/* 제출 수 */}
-                <div className="col-span-2 text-gray-400">
-                  {problem.submissionCount}
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </main>
     </div>
