@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Trophy, TrendingUp, Award, Target, BarChart3 } from "lucide-react";
 
 interface UserRanking {
   id: string;
@@ -18,32 +18,32 @@ const baseRankings: UserRanking[] = [
     rank: 1,
     username: "강은찬",
     solved: 8,
-    accuracy: 89,
-    score: 3560,
+    accuracy: 100,
+    score: 4500,
   },
   {
     id: "2",
     rank: 2,
     username: "조성현",
     solved: 6,
-    accuracy: 92,
-    score: 2840,
+    accuracy: 100,
+    score: 3800,
   },
   {
     id: "3",
     rank: 3,
-    username: "유재민",
-    solved: 4,
+    username: "정승우",
+    solved: 5,
     accuracy: 100,
-    score: 2210,
+    score: 3200,
   },
   {
     id: "4",
     rank: 4,
-    username: "정승우",
-    solved: 5,
-    accuracy: 95,
-    score: 3580,
+    username: "유재민",
+    solved: 4,
+    accuracy: 75,
+    score: 2100,
   },
 ];
 
@@ -113,7 +113,7 @@ export default function RankingPage() {
             </div>
             <div className="flex items-center gap-2 bg-[#0f0f0f] border border-gray-900 rounded-full px-4 py-2">
               <Trophy size={16} className="text-yellow-400" />
-              <span className="text-sm text-gray-400">정승우님의 순위 #4</span>
+              <span className="text-sm text-gray-400">정승우님의 순위 #3</span>
             </div>
           </div>
 
@@ -136,6 +136,65 @@ export default function RankingPage() {
             >
               랭킹
             </Link>
+          </div>
+
+          {/* 통계 카드 */}
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-3">
+                <Trophy className="text-yellow-400" size={24} />
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">1위 사용자</p>
+                  <p className="text-2xl font-bold text-yellow-400">강은찬</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <BarChart3 size={14} className="text-yellow-400/60" />
+                <p className="text-xs text-gray-400">8문제 해결 · 100%</p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-3">
+                <Target className="text-green-400" size={24} />
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">평균 정답률</p>
+                  <p className="text-2xl font-bold text-green-400">94%</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp size={14} className="text-green-400/60" />
+                <p className="text-xs text-gray-400">전월 대비 +8%</p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-3">
+                <Award className="text-blue-400" size={24} />
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">총 해결 문제</p>
+                  <p className="text-2xl font-bold text-blue-400">23</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <BarChart3 size={14} className="text-blue-400/60" />
+                <p className="text-xs text-gray-400">전체 10문제 중</p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-3">
+                <TrendingUp className="text-purple-400" size={24} />
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">평균 점수</p>
+                  <p className="text-2xl font-bold text-purple-400">3,400</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp size={14} className="text-purple-400/60" />
+                <p className="text-xs text-gray-400">지난주 대비 +250</p>
+              </div>
+            </div>
           </div>
 
           {/* Ranking Table */}

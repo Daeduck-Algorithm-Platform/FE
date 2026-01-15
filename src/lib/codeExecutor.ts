@@ -12,7 +12,7 @@ export interface ExecutionResult {
 /**
  * Python 코드 실행 (더미)
  */
-export function executePython(code: string): ExecutionResult {
+export function executePython(code: string, input?: any): ExecutionResult {
   try {
     // print() 문에서 값 추출
     const printMatch = code.match(/print\((.*?)\)/);
@@ -40,28 +40,69 @@ export function executePython(code: string): ExecutionResult {
 }
 
 /**
- * JavaScript 코드 실행 (더미)
+ * JavaScript 코드 실행 (실제 eval 사용)
  */
-export function executeJavaScript(code: string): ExecutionResult {
+export function executeJavaScript(code: string, input?: any): ExecutionResult {
   try {
-    // console.log() 에서 값 추출
-    const logMatch = code.match(/console\.log\((.*?)\)/);
-    if (logMatch) {
-      let result = logMatch[1].trim();
-      result = result.replace(/^["']|["']$/g, "");
-      result = result.replace(/`(.*?)`/g, "$1");
-      return { success: true, output: result };
-    }
+    // console.log를 캡처하기 위한 배열
+    const outputs: string[] = [];
 
-    // return 문에서 값 추출
-    const returnMatch = code.match(/return\s+(.*?)(?:;|\n|$)/);
-    if (returnMatch) {
-      let result = returnMatch[1].trim();
-      result = result.replace(/^["']|["']$/g, "");
-      return { success: true, output: result };
-    }
+    // console.log를 오버라이드
+    const mockConsole = {
+      log: (...args: any[]) => {
+        outputs.push(args.map((arg) => String(arg)).join(" "));
+      },
+    };
 
-    return { success: true, output: "(출력 없음)" };
+    try {
+      // 입력값이 문자열이면 파싱, 없으면 기본값 사용
+      let parsedInput = input;
+      if (typeof input === "string") {
+        try {
+          parsedInput = JSON.parse(input);
+        } catch {
+          // JSON 파싱 실패시 문자열 그대로 사용
+          parsedInput = input;
+        }
+      } else if (!input) {
+        // 입력값이 없으면 기본값
+        parsedInput = [3, 1, 4, 1, 5, 9, 2, 6];
+      }
+
+      // 코드를 실행하고 solve 함수를 찾아 호출
+      const wrappedCode = `
+        ${code}
+        // solve 함수가 정의되었는지 확인하고 호출
+        if (typeof solve === 'function') {
+          try {
+            // 전달받은 입력값으로 solve 함수 호출
+            const result = solve(INPUT_PARAM);
+            if (result !== undefined) {
+              return result;
+            }
+          } catch (e) {
+            // solve 함수 호출 실패
+          }
+        }
+        return undefined;
+      `.replace("INPUT_PARAM", JSON.stringify(parsedInput));
+
+      const result = new Function("console", wrappedCode)(mockConsole);
+
+      // console.log가 있으면 그 출력값 반환
+      if (outputs.length > 0) {
+        return { success: true, output: outputs.join("\n") };
+      }
+
+      // console.log가 없으면 return 값 확인
+      if (result !== undefined && result !== null) {
+        return { success: true, output: String(result) };
+      }
+
+      return { success: true, output: "(출력 없음)" };
+    } catch (evalError: any) {
+      return { success: false, output: "", error: evalError.message };
+    }
   } catch (error: any) {
     return { success: false, output: "", error: error.message };
   }
@@ -70,7 +111,7 @@ export function executeJavaScript(code: string): ExecutionResult {
 /**
  * Java 코드 실행 (더미)
  */
-export function executeJava(code: string): ExecutionResult {
+export function executeJava(code: string, input?: any): ExecutionResult {
   try {
     // System.out.println() 에서 값 추출
     const printMatch = code.match(/System\.out\.println\((.*?)\)/);
@@ -89,7 +130,7 @@ export function executeJava(code: string): ExecutionResult {
 /**
  * C++ 코드 실행 (더미)
  */
-export function executeCpp(code: string): ExecutionResult {
+export function executeCpp(code: string, input?: any): ExecutionResult {
   try {
     // cout 에서 값 추출
     const coutMatch = code.match(/cout\s*<<\s*(.*?)(?:;|<<)/);
@@ -109,7 +150,7 @@ export function executeCpp(code: string): ExecutionResult {
 /**
  * C 코드 실행 (더미)
  */
-export function executeC(code: string): ExecutionResult {
+export function executeC(code: string, input?: any): ExecutionResult {
   try {
     // printf 에서 값 추출
     const printfMatch = code.match(/printf\((.*?)\)/);
@@ -130,18 +171,22 @@ export function executeC(code: string): ExecutionResult {
 /**
  * 언어별 코드 실행
  */
-export function executeCode(code: string, language: string): ExecutionResult {
+export function executeCode(
+  code: string,
+  language: string,
+  input?: any
+): ExecutionResult {
   switch (language) {
     case "python":
-      return executePython(code);
+      return executePython(code, input);
     case "javascript":
-      return executeJavaScript(code);
+      return executeJavaScript(code, input);
     case "java":
-      return executeJava(code);
+      return executeJava(code, input);
     case "cpp":
-      return executeCpp(code);
+      return executeCpp(code, input);
     case "c":
-      return executeC(code);
+      return executeC(code, input);
     default:
       return { success: false, output: "", error: "지원하지 않는 언어입니다" };
   }
