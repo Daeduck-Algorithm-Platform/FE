@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 export default function Header() {
+ 
   return (
     <header className="sticky top-0 z-50 bg-black border-b border-gray-700">
       <div className="px-8 py-4 flex justify-end items-center gap-6">
@@ -28,9 +29,10 @@ export default function Header() {
           </Link>
         </nav>
 
-        <button className="px-6 py-2 rounded-lg bg-green-400 hover:bg-green-500 text-black font-semibold text-sm transition-colors">
+        <Link className="px-6 py-2 rounded-lg bg-green-400 hover:bg-green-500 text-black font-semibold text-sm transition-colors" href="/login">
           로그아웃
-        </button>
+        </Link>
+        
       </div>
     </header>
   );

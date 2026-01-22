@@ -32,7 +32,7 @@ export default function MyPageDashboard() {
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-white mb-1">
-                  2215 조성현
+                  2213 정승우
                 </h2>
               </div>
             </div>
