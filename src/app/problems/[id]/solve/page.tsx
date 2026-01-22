@@ -13,6 +13,7 @@ import {
   Sparkles,
   Lightbulb,
   TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import CodeEditor from "@/components/CodeEditor";
@@ -261,6 +262,7 @@ export default function ProblemSolvePage({
     complexity: string;
     improvements: string[];
   } | null>(null);
+  const [isAiFeedbackLoading, setIsAiFeedbackLoading] = useState(false);
   const [showAIFeedback, setShowAIFeedback] = useState(false);
 
   // 문제 데이터 찾기
@@ -370,10 +372,17 @@ export default function ProblemSolvePage({
   };
 
   const generateAIFeedback = () => {
-    // 코드 분석을 통한 실제 AI 피드백 생성
-    const analysis = analyzeCode(code, language);
-    setAiFeedback(analysis);
+    setIsAiFeedbackLoading(true);
+    setAiFeedback(null);
     setShowAIFeedback(true);
+
+    // Simulate AI analysis delay
+    setTimeout(() => {
+      // 코드 분석을 통한 실제 AI 피드백 생성
+      const analysis = analyzeCode(code, language);
+      setAiFeedback(analysis);
+      setIsAiFeedbackLoading(false);
+    }, 2000); // 2초 딜레이
   };
 
   // 코드 분석 함수 - 실제 코드를 분석하여 피드백 생성
@@ -696,77 +705,104 @@ export default function ProblemSolvePage({
               </div>
 
               {/* AI 피드백 */}
-              {showAIFeedback && aiFeedback && (
+              {showAIFeedback && (
                 <div className="border-t border-gray-900 bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4 max-h-64 overflow-y-auto flex-shrink-0">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-bold text-purple-400 flex items-center gap-2">
-                      <Sparkles size={16} />
-                      AI 코드 리뷰
-                    </h3>
-                    <button
-                      onClick={() => setShowAIFeedback(false)}
-                      className="text-gray-400 hover:text-white text-xs"
-                    >
-                      닫기
-                    </button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* 복잡도 분석 */}
-                    <div className="bg-black/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp size={14} className="text-blue-400" />
-                        <p className="text-xs font-semibold text-blue-400">
-                          복잡도 분석
-                        </p>
-                      </div>
-                      <p className="text-xs text-gray-300">
-                        {aiFeedback.complexity}
+                  {isAiFeedbackLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full min-h-[150px]">
+                      <Loader2
+                        className="animate-spin text-purple-400"
+                        size={24}
+                      />
+                      <p className="mt-2 text-sm text-gray-400">
+                        AI가 코드를 분석하고 있습니다...
                       </p>
                     </div>
-
-                    {/* 개선 제안 */}
-                    <div className="bg-black/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb size={14} className="text-yellow-400" />
-                        <p className="text-xs font-semibold text-yellow-400">
-                          개선 제안
-                        </p>
-                      </div>
-                      <ul className="space-y-1">
-                        {aiFeedback.suggestions.map((suggestion, idx) => (
-                          <li
-                            key={idx}
-                            className="text-xs text-gray-300 flex gap-2"
+                  ) : (
+                    aiFeedback && (
+                      <>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-bold text-purple-400 flex items-center gap-2">
+                            <Sparkles size={16} />
+                            AI 코드 리뷰
+                          </h3>
+                          <button
+                            onClick={() => setShowAIFeedback(false)}
+                            className="text-gray-400 hover:text-white text-xs"
                           >
-                            <span className="text-yellow-400">•</span>
-                            <span>{suggestion}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                            닫기
+                          </button>
+                        </div>
 
-                    {/* 최적화 포인트 */}
-                    <div className="bg-black/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle size={14} className="text-green-400" />
-                        <p className="text-xs font-semibold text-green-400">
-                          최적화 포인트
-                        </p>
-                      </div>
-                      <ul className="space-y-1">
-                        {aiFeedback.improvements.map((improvement, idx) => (
-                          <li
-                            key={idx}
-                            className="text-xs text-gray-300 flex gap-2"
-                          >
-                            <span className="text-green-400">✓</span>
-                            <span>{improvement}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
+                        <div className="space-y-3">
+                          {/* 복잡도 분석 */}
+                          <div className="bg-black/30 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <TrendingUp
+                                size={14}
+                                className="text-blue-400"
+                              />
+                              <p className="text-xs font-semibold text-blue-400">
+                                복잡도 분석
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-300">
+                              {aiFeedback.complexity}
+                            </p>
+                          </div>
+
+                          {/* 개선 제안 */}
+                          <div className="bg-black/30 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Lightbulb
+                                size={14}
+                                className="text-yellow-400"
+                              />
+                              <p className="text-xs font-semibold text-yellow-400">
+                                개선 제안
+                              </p>
+                            </div>
+                            <ul className="space-y-1">
+                              {aiFeedback.suggestions.map((suggestion, idx) => (
+                                <li
+                                  key={idx}
+                                  className="text-xs text-gray-300 flex gap-2"
+                                >
+                                  <span className="text-yellow-400">•</span>
+                                  <span>{suggestion}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* 최적화 포인트 */}
+                          <div className="bg-black/30 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle
+                                size={14}
+                                className="text-green-400"
+                              />
+                              <p className="text-xs font-semibold text-green-400">
+                                최적화 포인트
+                              </p>
+                            </div>
+                            <ul className="space-y-1">
+                              {aiFeedback.improvements.map(
+                                (improvement, idx) => (
+                                  <li
+                                    key={idx}
+                                    className="text-xs text-gray-300 flex gap-2"
+                                  >
+                                    <span className="text-green-400">✓</span>
+                                    <span>{improvement}</span>
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
+                        </div>
+                      </>
+                    )
+                  )}
                 </div>
               )}
 
